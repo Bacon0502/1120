@@ -1,0 +1,84 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // ===============================================================
+    // Assumed Data Model
+    //
+    // Collection path: users/{uid}/state
+    // Document ID: app
+    // Fields (all required):
+    //   data: map with exactly tasks, events, habits, projects; each field is
+    //         a list with a bounded number of entries. The lists hold the
+    //         signed-in user's private Dayflow records.
+    //   updatedAt: server timestamp, equal to request.time on each write.
+    // Ownership is encoded by the document path UID. No email, roles, or
+    // cross-user sharing fields are stored in this document.
+    // ===============================================================
+
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    // This document has no mutable UID field; reject one if supplied.
+    function uidUnchanged() {
+      return !('uid' in request.resource.data);
+    }
+
+    function uidNotModified() {
+      return !('uid' in request.resource.data) ||
+        request.resource.data.uid == resource.data.get('uid', null);
+    }
+
+    function hasRequiredFields(fields) {
+      return request.resource.data.keys().hasAll(fields);
+    }
+
+    function hasOnlyAllowedFields(fields) {
+      return request.resource.data.keys().hasOnly(fields);
+    }
+
+    function isValidList(dataMap, field, maxItems) {
+      return dataMap[field] is list && dataMap[field].size() <= maxItems;
+    }
+
+    // Validator is required for both create and update. Keep each user's
+    // complete snapshot bounded and prevent unexpected top-level fields.
+    function isValidAppState() {
+      return hasRequiredFields(['data', 'updatedAt']) &&
+        hasOnlyAllowedFields(['data', 'updatedAt']) &&
+        request.resource.data.updatedAt is timestamp &&
+        request.resource.data.updatedAt == request.time &&
+        request.resource.data.data is map &&
+        request.resource.data.data.keys().hasAll(
+          ['tasks', 'events', 'habits', 'projects']
+        ) &&
+        request.resource.data.data.keys().hasOnly(
+          ['tasks', 'events', 'habits', 'projects']
+        ) &&
+        isValidList(request.resource.data.data, 'tasks', 500) &&
+        isValidList(request.resource.data.data, 'events', 500) &&
+        isValidList(request.resource.data.data, 'habits', 200) &&
+        isValidList(request.resource.data.data, 'projects', 200);
+    }
+
+    match /users/{userId}/state/app {
+      allow get: if isOwner(userId);
+      allow list: if false;
+      allow create: if isOwner(userId) && uidUnchanged() && isValidAppState();
+      allow update: if isOwner(userId) && uidNotModified() && isValidAppState();
+      // There is no delete flow in the MVP. Keep deletion unavailable until
+      // the app offers an explicit account-data deletion flow.
+      allow delete: if false;
+    }
+
+    // Default deny for every other collection and document path.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
+

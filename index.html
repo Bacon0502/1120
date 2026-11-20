@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f6f7f3">
+  <title>日常 Dayflow</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <section id="auth-screen" class="auth-screen" aria-live="polite">
+    <div class="auth-card"><span class="brand-mark">日</span><div class="eyebrow">DAYFLOW · 個人工作區</div><h1>讓日常有序，<br>也留一點餘裕。</h1><p id="auth-message">使用 Google 帳戶登入，跨裝置同步你的任務與安排。</p><button id="google-sign-in" class="button button-dark auth-button">使用 Google 登入</button><small id="auth-hint">登入後，資料會安全儲存在你的 Firestore 使用者空間。</small></div>
+  </section>
+  <div class="app-shell" hidden>
+    <aside class="sidebar" aria-label="主要導覽">
+      <a class="brand" href="#home"><span class="brand-mark">日</span><span><b>日常</b><small>DAYFLOW</small></span></a>
+      <p class="nav-caption">工作空間</p>
+      <nav class="nav-list">
+        <button class="nav-item active" data-page="home"><span>◫</span>今日總覽</button>
+        <button class="nav-item" data-page="calendar"><span>▦</span>行事曆</button>
+        <button class="nav-item" data-page="tasks"><span>☷</span>任務清單</button>
+        <button class="nav-item" data-page="habits"><span>◉</span>習慣追蹤</button>
+        <button class="nav-item" data-page="projects"><span>▤</span>專案進度</button>
+      </nav>
+      <div class="sidebar-bottom"><span class="avatar">N</span><span><b>我的空間</b><small>個人工作區</small></span><span class="more">···</span></div>
+    </aside>
+    <main class="main-content">
+      <header class="topbar"><div class="mobile-brand"><span class="brand-mark">日</span><b>日常</b></div><div class="breadcrumbs">我的空間 <span>/</span> <b id="crumb">今日總覽</b></div><div class="top-actions"><span class="today-chip" id="today-chip"></span><span id="sync-status" class="sync-status">雲端同步</span><button id="quick-add" class="button button-dark">＋ <span>快速新增</span></button><button id="sign-out" class="button button-light" aria-label="登出">登出</button></div></header>
+      <div id="app" class="page-wrap"></div>
+    </main>
+  </div>
+  <nav class="mobile-nav" aria-label="手機導覽" hidden>
+    <button class="active" data-page="home"><span>◫</span>總覽</button><button data-page="calendar"><span>▦</span>行事曆</button><button data-page="tasks"><span>☷</span>任務</button><button data-page="habits"><span>◉</span>習慣</button><button data-page="projects"><span>▤</span>專案</button>
+  </nav>
+  <dialog id="modal"><form id="entry-form" method="dialog"><div class="modal-head"><div><small id="form-eyebrow">新增項目</small><h2 id="form-title">新增任務</h2></div><button type="button" class="icon-button" id="close-modal" aria-label="關閉">×</button></div><div id="form-fields" class="form-fields"></div><p id="form-error" class="form-error" role="alert"></p><div class="modal-actions"><button type="button" class="button button-light" id="cancel-modal">取消</button><button class="button button-dark" type="submit">儲存</button></div></form></dialog>
+  <script type="module" src="app.js"></script>
+</body>
+</html>
+
